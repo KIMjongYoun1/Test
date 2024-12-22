@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Test.DAO.TestDAO">
+
+	<!-- 유저 정보 조회 -->
+	<select id="getUserById" resultType="Test.VO.TestVO">
+		SELECT * FROM users WHERE user_id = #{userId}
+	</select>
+	<!-- 유저가입 -->
+	<insert id="insertUser" parameterType="Test.VO.TestVO">
+		INSERT INTO Test_User (user_id, user_name, password)
+		VALUES (#{userId}, #{userName}, #{passWord})
+	</insert>
+	<!-- 게시글조회 -->
+	<select id="getPostById" resultType="Test.VO.Test2VO">
+		SELECT * FROM post WHERE post_id = #{post_id}
+	</select>
+	<!-- 게시글작성 -->
+	<insert id="insertPost" parameterType="Test.VO.Test2VO">
+		INSERT INTO post (title, content,author_id, thumbnail)
+		VALUES (#{title}, #{content}, #{authorId}, #{thumbnail})
+	</insert>
+
+	<!-- 게시글 목록 조회 -->
+	<select id="getAllpost" resultType="Test.VO.Test2VO">
+		SELECT post_id, title, content, author_id, created_at, thumbnail
+		FROM post
+		ORDER BY created_at DESC
+	</select>
+
+</mapper>
+

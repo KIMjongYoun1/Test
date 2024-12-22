@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Post Detail Page</title>
+</head>
+<body>
+	<h1>Post Detail</h1>
+	<hr>
+	<div class="container">
+		<img th:src="@{${post.thumbnail}}" alt="Post Thumbnail" />
+		<h1 th:text="${post.title}"></h1>
+		<h1 th:text="${post.content}"></h1>
+		<p th:text="${post.authorId}"></p>
+		<p th:text="${post.createdAt}"></p>
+		<button onclick="location.href='/test'">Home</button>
+		<a href="/list">게시글 목록으로 돌아가기</a>
+	</div>
+</body>
+</html>
