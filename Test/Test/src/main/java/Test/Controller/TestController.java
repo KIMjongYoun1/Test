@@ -17,6 +17,7 @@ import Test.DAO.TestDAO;
 import Test.Service.TestService;
 import Test.Util.fileUpload;
 import Test.VO.Test2VO;
+import Test.VO.Test3VO;
 import Test.VO.TestVO;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class TestController {
 			model.addAttribute("message", "로그인되지 않은 상태입니다.");
 		}
 		List<Test2VO> posts = testService.getAllpost();
-	    model.addAttribute("posts", posts);
+		model.addAttribute("posts", posts);
 
 		return "/test";
 
@@ -115,29 +116,29 @@ public class TestController {
 	}
 
 	@PostMapping("/post")
-	public String createPost2(@ModelAttribute Test2VO test2, HttpSession session,
-								@RequestParam MultipartFile file, Model model) throws IOException {
+	public String createPost2(@ModelAttribute Test2VO test2, HttpSession session, @RequestParam MultipartFile file,
+			Model model) throws IOException {
 		TestVO user = (TestVO) session.getAttribute("loginuser");
-		if(user == null) { 
+		if (user == null) {
 			return "redirect:/login";
 		}
 
 		// 작성자 정보 설정
 		String userName = user.getUserName();
 		test2.setAuthorId(userName);
-		
+
 		// 파일 업로드 로직
-		List<String> allowedExtensions = List.of("jpg","jpeg","png","gif");
+		List<String> allowedExtensions = List.of("jpg", "jpeg", "png", "gif");
 		long maxSize = 10 * 1024 * 1024;
-		
-		if(!fileUpload.inValidFile(file, allowedExtensions, maxSize)) {
-			model.addAttribute("error" , "허용되지 않은 파일입니다.");
+
+		if (!fileUpload.inValidFile(file, allowedExtensions, maxSize)) {
+			model.addAttribute("error", "허용되지 않은 파일입니다.");
 			return "post";
 		}
-		
+
 		String filePath = fileUpload.uploadFile(file);
 		test2.setThumbnail(filePath);
-		
+
 		testService.savePost(test2);
 
 		return "redirect:/list";
@@ -145,21 +146,57 @@ public class TestController {
 
 	@GetMapping("/list")
 	public String listPosts(Model model) {
-	    List<Test2VO> posts = testService.getAllpost();
-	    model.addAttribute("posts", posts);
-	    return "list"; // 게시글 목록 페이지 (list.html) 반환
+		List<Test2VO> posts = testService.getAllpost();
+		model.addAttribute("posts", posts);
+		return "list"; // 게시글 목록 페이지 (list.html) 반환
 	}
 
 	@GetMapping("/post/{id}")
-	public String viewPost(@PathVariable("id") int postId, Model model ) {
+	public String viewPost(@PathVariable("id") int postId, Model model) {
 		Test2VO post = testService.getPostById(postId);
-		
-		if(post == null) {
+
+		if (post == null) {
 			log.info("포스트가 업습니다.");
 			return "redirect:/list";
 		}
 		log.info("게시글내용 : " + post.getContent());
+		
+		List<Test3VO> coment = testService.getComent(postId);
+		
 		model.addAttribute("post", post);
+		model.addAttribute("coment", coment);
 		return "postDetail";
+	}
+
+	// 댓글작성 매서드
+	@PostMapping("/coment")
+	public String addComnet(@RequestParam long postId, @RequestParam String content, HttpSession session) {
+		TestVO user = (TestVO) session.getAttribute("loginuser");
+
+		if (user == null) {
+			return "redirect:/login";
+
+		}
+
+		String authorId = user.getUserId();
+		Test3VO test3 = new Test3VO();
+		test3.setPostId(postId);
+		test3.setContent(content);
+		test3.setAuthorId(authorId); // 작성자 id 세팅
+
+		testService.addComent(test3);
+
+		return "redirect:/post/" + postId; // 게시글 상세페이
+
+	}
+
+	// 댓글 조회 매서드
+	@GetMapping("/post/{id}/coment")
+	public String getComent(@PathVariable("id") long postId, Model model) {
+		// 댓글조회 목록 리스트
+		List<Test3VO> coment = testService.getComent(postId);
+		model.addAttribute("coment", coment);
+		return "postDetail";
+
 	}
 }

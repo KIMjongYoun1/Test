@@ -13,6 +13,24 @@
 		<h1 th:text="${post.content}"></h1>
 		<p th:text="${post.authorId}"></p>
 		<p th:text="${post.createdAt}"></p>
+		<hr>
+		<h3>Coment</h3>
+		<!-- 댓글 없으면 500오류발생함, 댓글 여부체크로직 없어도 상세페이지는 랜딩되야함 -->
+		<div th:if="${coment != null and #lists.isEmpty(coment) == false}">
+			<ul>
+				<li th:each="coment :${coment}">
+					<p><strong th:text="${authorId}"></strong><span th:text="${coment.content}"></span> </p>
+					<p><small th:text="${coment.createdAt}"></small> </p>
+				</li>
+			</ul> 
+		</div>
+		<form action="/coment" method="post">
+		<input type="hidden" name="postId" th:value="${post.postId}"/>
+		<textarea name="content" placeholder="댓글을 작성하세요!!"requeired></textarea>
+		<br><br>
+		<button type="submit">댓글작성</button>
+		</form>
+		
 		<button onclick="location.href='/test'">Home</button>
 		<a href="/list">게시글 목록으로 돌아가기</a>
 	</div>

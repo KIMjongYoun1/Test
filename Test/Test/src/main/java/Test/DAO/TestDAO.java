@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import Test.VO.Test2VO;
+import Test.VO.Test3VO;
 import Test.VO.TestVO;
 
 @Mapper
@@ -25,6 +26,12 @@ public interface TestDAO {
 	public Test2VO getPostById(int postId);
 	// 게시글 전체 호출
 	public List<Test2VO> getAllpost();
+	
+	//댓글 작성
+	public void insertComent(Test3VO test3);
+	
+	// 댓글 조회
+	public List<Test3VO> getByComentId(long postId);
 	
 }
 

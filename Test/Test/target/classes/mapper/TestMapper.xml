@@ -28,5 +28,18 @@
 		ORDER BY created_at DESC
 	</select>
 
+	<!-- 댓글조회 -->
+	<select id="getByComentId" resultType="Test.VO.Test3VO">
+		SELECT post_id, content, author_id, created_at, coment_id
+		FROM coment
+		WHERE post_id = #{postId}
+	</select>
+	
+	<!-- 댓글작성 -->
+	<insert id="insertComent" parameterType="Test.VO.Test3VO">
+		INSERT INTO coment(post_id, content, author_id)
+		VALUES(#{postId}, #{content}, #{authorId})
+	</insert>
+
 </mapper>
 
