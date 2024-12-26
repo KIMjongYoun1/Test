@@ -1,9 +1,13 @@
 package Test.Controller;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import Test.DAO.TestDAO;
@@ -18,6 +23,7 @@ import Test.Service.TestService;
 import Test.Util.fileUpload;
 import Test.VO.Test2VO;
 import Test.VO.Test3VO;
+import Test.VO.Test4VO;
 import Test.VO.TestVO;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -160,9 +166,9 @@ public class TestController {
 			return "redirect:/list";
 		}
 		log.info("게시글내용 : " + post.getContent());
-		
+
 		List<Test3VO> coment = testService.getComent(postId);
-		
+
 		model.addAttribute("post", post);
 		model.addAttribute("coment", coment);
 		return "postDetail";
@@ -199,4 +205,93 @@ public class TestController {
 		return "postDetail";
 
 	}
+
+	// 좋아요추가
+	// 하....
+	@PostMapping("/post/{id}/like")
+	@ResponseBody
+	public ResponseEntity<Map<String, String>> addLike(@PathVariable("id") long postId, HttpSession session) {
+		Map<String, String> response = new HashMap<>();
+
+		TestVO user = (TestVO) session.getAttribute("loginuser");
+		if (user == null) {
+			response.put("status", "error");
+			response.put("message", "로그인이 필요합니다.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+		}
+
+		String userId = user.getUserId();
+
+		Test4VO test4 = new Test4VO();
+		test4.setPostId(postId);
+		test4.setUserId(userId);
+
+		 //중복 좋아요 체크
+		// 수정을해야할 필요가있는 로직 서버오류 문구로만나옴
+		boolean isLiked = testDAO.checkLike(postId, userId);
+		
+		if (isLiked) {
+			response.put("status", "error");
+			response.put("message", "이미 좋아요를 눌렀습니다.");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		}
+
+		// 좋아요 추가
+		testService.insertLike(test4);
+
+		response.put("status", "success");
+		response.put("message", "좋아요가 추가되었습니다.");
+		response.put("redirect", "/post/" + postId);
+
+		return ResponseEntity.ok(response);
+	}
+
+	// 좋아요 추가
+//	@PostMapping("/like")
+//	@ResponseBody
+//	public Map<String, String> addLike(@RequestParam("postId") long postId, HttpSession session) {
+//		Map<String, String> response = new HashMap<>();
+//
+//		System.out.println("Received postId: " + postId); // 로그 추가
+//		log.info("Received postId: " + postId); // SLF4J 로그도 추가 가능
+//
+//		// 로그인된 유저 정보 가져오기
+//		TestVO user = (TestVO) session.getAttribute("loginuser");
+//
+//		if (user == null) {
+//			response.put("status", "error");
+//			response.put("message", "로그인이 필요합니다.");
+//			return response;
+//		}
+//
+//		String userId = user.getUserId();
+//		System.out.println("Received userId: " + userId); // 로그 추가
+//		log.info("Received userId: " + userId); // SLF4J 로그도 추가 가능
+//
+//		// 중복 체크
+//		boolean isLiked = testService.checkLike(postId, userId);
+//		if (isLiked) {
+//			response.put("status", "error");
+//			response.put("message", "이미 좋아요를 눌렀습니다.");
+//			return response;
+//		}
+//
+//		// 좋아요 추가 (객체 생성 후 데이터 세팅)
+//		Test4VO test4 = new Test4VO();
+//		test4.setPostId(postId); // postId 설정
+//		test4.setUserId(userId); // userId 설정
+//
+//		log.info("Calling insertLike with postId: {} and userId: {}", postId, userId);
+//		log.info("Test4VO object before calling insertLike: {}", test4);
+//		testService.insertLike2(test4);
+//		log.info("Test4VO object inserted successfully.");
+//
+//		// 성공 시 응답
+//		response.put("status", "success");
+//		response.put("message", "좋아요가 추가되었습니다.");
+//		response.put("redirect", "/post/" + postId);
+//
+//		return response;
+//	}
+
 }
