@@ -67,8 +67,11 @@ public class TestService {
 	// 좋아요 상태조회
 	public boolean checkLike(long postId, String userId) {
 
-		 int count = testDAO.checkLike(postId, userId);
-		    return count > 0;
+		if (userId == null) {
+			return false;
+		}
+
+		return testDAO.checkLike(postId, userId);
 	}
 
 	// 좋아요 갯수조회

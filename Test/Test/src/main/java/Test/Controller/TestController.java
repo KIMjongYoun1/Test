@@ -78,10 +78,12 @@ public class TestController {
 	@PostMapping("/login")
 	public String login2(@RequestParam String userId, @RequestParam String passWord, HttpSession session) {
 
-		if (session.getAttribute("loginuser") != null) {
-			System.out.println("이미 로그인된 상태입니다.");
-			return "redirect:/test"; // 이미 로그인된 경우 테스트 페이지로 이동
-		}
+		//필터와 인터셉터구현으로 필요없음
+		
+//		if (session.getAttribute("loginuser") != null) {
+//			System.out.println("이미 로그인된 상태입니다.");
+//			return "redirect:/test"; // 이미 로그인된 경우 테스트 페이지로 이동
+//		}
 
 		TestVO user = testDAO.getUserById(userId);
 
