@@ -4,7 +4,7 @@
 
 	<!-- 유저 정보 조회 -->
 	<select id="getUserById" resultType="Test.VO.TestVO">
-		SELECT * FROM users WHERE
+		SELECT * FROM Test_User WHERE
 		user_id = #{userId}
 	</select>
 	<!-- 유저가입 -->

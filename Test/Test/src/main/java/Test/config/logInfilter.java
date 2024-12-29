@@ -24,42 +24,41 @@ public class logInfilter implements webFilter {
 	}
 
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		
-		//요청전 처리작업
-		System.out.println("Request intercepted in loginFilter");
-		HttpServletRequest httpRequest = (HttpServletRequest) request;
-		HttpServletResponse httpResponse = (HttpServletResponse) response;
-		
-		  // 제외할 경로 설정
-        String path = httpRequest.getRequestURI();
-        if (path.equals("/test") || path.equals("/login")) {
-            chain.doFilter(request, response); // 필터 건너뛰고 다음으로 전달
-            return;
-        }
-		
-		// 현재 요청 세션 가져오기
-		HttpSession session = httpRequest.getSession(false);
-		
-		// 세션에서 로그인정보 가져오기
-		Object user = (session != null ? session.getAttribute("loginuser") : null);
-		
-		//로그인 되지 않은경우
-		if (user == null) {
-			
-			System.out.println("로그인이 필요합니다.");
-			httpResponse.sendRedirect("/login");
-			return;
-		}
-		
-		// 로그인된경우
-		System.out.println("로그인 사용자 : " + session.getAttribute("loginuser"));
-		// 다음 필터 또는 최종 서블릿으로 전달 요청
-		chain.doFilter(request, response);
-		
-		//응답 후 처리 작업
-		System.out.println("Response intercepted Filter");
-		
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+	        throws IOException, ServletException {
+
+	    System.out.println("Request intercepted in loginFilter");
+
+	    HttpServletRequest httpRequest = (HttpServletRequest) request;
+	    HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+	    // 제외할 경로 설정
+	    String path = httpRequest.getRequestURI();
+	    System.out.println("Filter: Current path = " + path);
+
+	    if (path.startsWith("/login") || path.startsWith("/signup") || path.startsWith("/test")) {
+	        chain.doFilter(request, response); // 필터 건너뛰고 다음으로 전달
+	        return;
+	    }
+
+	    // 현재 요청 세션 가져오기
+	    HttpSession session = httpRequest.getSession(false);
+	    Object user = (session != null ? session.getAttribute("loginuser") : null);
+
+	    // 세션 상태 로그 확인
+	    System.out.println("Filter: Current session = " + session);
+	    System.out.println("Filter: Login user = " + (user != null ? user.toString() : "null"));
+
+	    if (user == null) {
+	        System.out.println("로그인이 필요합니다. Redirecting to /login");
+	        httpResponse.sendRedirect("/login");
+	        return;
+	    }
+
+	    System.out.println("로그인 사용자 : " + user);
+
+	    chain.doFilter(request, response); // 다음 필터 또는 컨트롤러로 전달
+	    System.out.println("Response intercepted Filter");
 	}
 
 	@Override

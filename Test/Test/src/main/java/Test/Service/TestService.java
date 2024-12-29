@@ -1,13 +1,12 @@
 package Test.Service;
 
-
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import Test.DAO.TestDAO;
+import Test.Util.AESCryptoService;
 import Test.VO.Test2VO;
 import Test.VO.Test3VO;
 import Test.VO.Test4VO;
@@ -21,14 +20,32 @@ public class TestService {
 	@Autowired
 	private TestDAO testDAO;
 
+	private final AESCryptoService cryptoService = new AESCryptoService();
+
 	// 사용자 등록처리
 	public void insertUser(TestVO test) {
+		log.info("Original password for userId {}: {}", test.getUserId(), test.getPassWord());
+		// 비밀번호 암호화
+		String encryptedPassword = cryptoService.encrypt(test.getPassWord());
+		
+		log.info("Encrypted password for userId {}: {}", test.getUserId(), encryptedPassword);
+
+		test.setPassWord(encryptedPassword);
 		testDAO.insertUser(test);
+		
+		log.info("User {} successfully inserted with encrypted password.", test.getUserId());
 	}
 
 	// 유저정보 조회
 	public TestVO selectUser(String userId) {
-		return testDAO.getUserById(userId);
+		TestVO user = testDAO.getUserById(userId);
+
+		if (user != null) {
+			String decryptedPassword = cryptoService.decrypt(user.getPassWord());
+			user.setPassWord(decryptedPassword);
+		}
+
+		return user;
 	}
 
 	// 게시글저장
@@ -57,11 +74,11 @@ public class TestService {
 		return testDAO.getByComentId(postId);
 	}
 
-	  // 좋아요 추가
+	// 좋아요 추가
 	public void insertLike(Test4VO test4) {
-	    String userId = test4.getUserId();
-	    Long postId = test4.getPostId();
-	    testDAO.insertLike(userId, postId);  // DAO 호출
+		String userId = test4.getUserId();
+		Long postId = test4.getPostId();
+		testDAO.insertLike(userId, postId); // DAO 호출
 	}
 
 	// 좋아요 상태조회
@@ -79,7 +96,5 @@ public class TestService {
 
 		return testDAO.getLikeCount(postId);
 	}
-
-
 
 }

@@ -1,6 +1,7 @@
 package Test.Controller;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import Test.DAO.TestDAO;
 import Test.Service.TestService;
+import Test.Util.AESCryptoService;
 import Test.Util.fileUpload;
 import Test.VO.Test2VO;
 import Test.VO.Test3VO;
@@ -36,6 +38,20 @@ public class TestController {
 	private TestService testService;
 	@Autowired
 	private TestDAO testDAO;
+	@Autowired
+	private AESCryptoService cryptoService;
+	
+	// 로그인비밀번호 검증
+	private boolean isEncrypted(String password) {
+	    try {
+	        // Base64로 디코딩을 시도하여 암호화된 값인지 확인
+	        Base64.getDecoder().decode(password);
+	        return true; // 암호화된 값
+	    } catch (IllegalArgumentException e) {
+	        return false; // 평문 값
+	    }
+	}
+	
 
 	@GetMapping("/test")
 	public String homePage(HttpSession session, Model model) {
@@ -77,38 +93,37 @@ public class TestController {
 
 	@PostMapping("/login")
 	public String login2(@RequestParam String userId, @RequestParam String passWord, HttpSession session) {
+	    System.out.println("Controller: Received userId = " + userId);
 
-		//필터와 인터셉터구현으로 필요없음
-		
-//		if (session.getAttribute("loginuser") != null) {
-//			System.out.println("이미 로그인된 상태입니다.");
-//			return "redirect:/test"; // 이미 로그인된 경우 테스트 페이지로 이동
-//		}
+	    TestVO user = testDAO.getUserById(userId);
 
-		TestVO user = testDAO.getUserById(userId);
+	    if (user == null) {
+	        System.out.println("사용자를 찾을 수 없습니다: userId = " + userId);
+	        return "login";
+	    }
 
-		if (user == null) {
-			System.out.println("사용자를 찾을 수 없습니다: userId = " + userId);
-			return "login";
-		}
-		if (!user.getPassWord().equals(passWord)) {
-			System.out.println("비밀번호가 일치하지 않습니다.");
-			return "login";
-		}
+	    String storedPassword = user.getPassWord();
+	    boolean isMatch = false;
 
-		session.setAttribute("loginuser", user);
-		System.out.println("로그인 성공: " + userId);
+	    if (isEncrypted(storedPassword)) {
+	        // 암호화된 비밀번호 비교
+	        String encryptedInputPassword = cryptoService.encrypt(passWord);
+	        System.out.println("Encrypted input password: " + encryptedInputPassword);
+	        isMatch = storedPassword.equals(encryptedInputPassword);
+	    } else {
+	        // 암호화되지 않은 비밀번호 비교
+	        isMatch = storedPassword.equals(passWord);
+	    }
 
-		return "redirect:/test";
-	}
+	    if (!isMatch) {
+	        System.out.println("비밀번호가 일치하지 않습니다.");
+	        return "login";
+	    }
 
-	@PostMapping("/logout")
-	public String logout(HttpSession session) {
-		if (session != null) {
-			session.invalidate();
-			System.out.println("세션이 무효화 되었습니다.");
-		}
-		return "redirect:/test";
+	    session.setAttribute("loginuser", user);
+	    System.out.println("로그인 성공: " + userId);
+
+	    return "redirect:/test";
 	}
 	// -------------------------- 게시글매서드
 
@@ -228,10 +243,10 @@ public class TestController {
 		test4.setPostId(postId);
 		test4.setUserId(userId);
 
-		 //중복 좋아요 체크
+		// 중복 좋아요 체크
 		// 수정을해야할 필요가있는 로직 서버오류 문구로만나옴
 		boolean isLiked = testDAO.checkLike(postId, userId);
-		
+
 		if (isLiked) {
 			response.put("status", "error");
 			response.put("message", "이미 좋아요를 눌렀습니다.");
