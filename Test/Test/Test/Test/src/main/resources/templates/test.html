@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Test Priview</title>
+
+ <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+
+</head>
+<body>
+	<h1>Test Code Pre</h1>
+	<hr>
+	<h2>User Info</h2>
+	<!-- 로그인 유저 정보 -->
+	<div th:if="${user != null}">
+	<p th:text="'User Id:' + ${user.userId}"></p>
+	<p th:text="'User Name:' + ${user.userName}"></p>
+	</div>
+	<!-- 비회원 메시지 -->
+    <div th:if="${user == null}">
+        <p th:text="${message}"></p>
+    </div>
+	<hr>
+	<h2>Coding</h2>
+	<button onclick="location.href='/signup'">회원가입</button>
+	<button onclick="location.href='/login'">로그인</button>
+	
+	<form th:action="@{/logout}" method="post">
+	<button type="submit">로그아웃</button>
+	</form>
+	<button onclick="location.href='/list'">LIst</button>
+	<button onclick="location.href='/post'">글쓰기</button>
+	<button onclick="location.href='/signup'">좋아요</button>
+	<button onclick="location.href='/signup'">댓글쓰기</button>
+	<button onclick="location.href='/signup'">즐겨찾기</button>
+	<hr>
+	<h1>List</h1>
+	    <table>
+        <thead>
+            <tr>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>작성일</th>
+                <th>상세보기</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="post : ${posts}">
+                <td th:text="${post.title}"></td> <!-- 제목 -->
+                <td th:text="${post.authorId}"></td> <!-- 작성자 -->
+                <td th:text="${post.createdAt}"></td> <!-- 작성일 -->
+                <td><a th:href="@{/post/{id}(id=${post.postId})}">상세보기</a></td> <!-- 상세보기 링크 -->
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
